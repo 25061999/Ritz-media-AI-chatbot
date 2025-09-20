@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ritz Media AI Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; 
+      padding: 20px;
+      background-color: #f4f4f4;
+      transition: background 0.5s ease-in-out;
+    }
+
+    /* Watermark Mode */
+    body.watermark {
+      background: url('https://ritzmediaworld.com/rmw-final-logo.png') no-repeat center center fixed;
+      background-size: 200px;
+    }
+
+    /* Wallpaper Mode */
+    body.wallpaper {
+      background: url('https://ritzmediaworld.com/rmw-final-logo.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    /* Overlay for wallpaper readability */
+    #overlay {
+      position: relative;
+      z-index: 1;
+      background-color: rgba(255,255,255,0.9);
+      padding: 20px;
+      border-radius: 10px;
+      width: fit-content;
+      margin: auto;
+    }
+
+    #chatbox {
+      width: 500px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: white;
+      padding: 10px;
+      border-radius: 8px;
+      margin: auto;
+    }
+
+    .msg { margin: 8px 0; padding: 8px; border-radius: 5px; display: inline-block; max-width: 80%; }
+    .user { background: #0078d7; color: white; text-align: right; float: right; clear: both; }
+    .bot { background: #e5e5e5; text-align: left; float: left; clear: both; }
+
+    #input-area { width: 500px; margin: 20px auto; display: flex; }
+    input { flex: 1; padding: 10px; }
+    button { padding: 10px; background: #0078d7; color: white; border: none; cursor: pointer; }
+    #typing { font-style: italic; color: gray; margin: 5px 0; }
+
+    /* Toggle button */
+    #toggle {
+      display: block;
+      margin: 10px auto;
+      background: #444;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    /* Logo in top-left */
+    #logo {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 80px;
+      height: auto;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body class="watermark">
+  <!-- Logo Branding -->
+  <img id="logo" src="lhttps://ritzmediaworld.com/rmw-final-logo.png">
+
+  <div id="overlay">
+    <h2 style="text-align:center;">💬 Ritz Media AI Chatbot</h2>
+    <button id="toggle">Switch to Wallpaper</button>
+    <div id="chatbox"></div>
+    <div id="input-area">
+      <input id="userInput" type="text" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter'){sendMessage();}">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // Background toggle
+    const toggleBtn = document.getElementById("toggle");
+    toggleBtn.addEventListener("click", () => {
+      let body = document.body;
+      if (body.classList.contains("watermark")) {
+        body.classList.remove("watermark");
+        body.classList.add("wallpaper");
+        toggleBtn.textContent = "Switch to Watermark";
+      } else {
+        body.classList.remove("wallpaper");
+        body.classList.add("watermark");
+        toggleBtn.textContent = "Switch to Wallpaper";
+      }
+    });
+
+    async function sendMessage() {
+      let input = document.getElementById("userInput");
+      let message = input.value.trim();
+      if (!message) return;
+
+      let chatbox = document.getElementById("chatbox");
+
+      // Show user's message
+      chatbox.innerHTML += `<div class="msg user">${message}</div>`;
+      input.value = "";
+
+      // Show typing indicator
+      let typingIndicator = document.createElement("div");
+      typingIndicator.id = "typing";
+      typingIndicator.textContent = "Bot is typing...";
+      chatbox.appendChild(typingIndicator);
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      try {
+        let res = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question: message })
+        });
+
+        let data = await res.json();
+
+        typingIndicator.remove();
+        chatbox.innerHTML += `<div class="msg bot">${data.answer}</div>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+      } catch (err) {
+        typingIndicator.remove();
+        chatbox.innerHTML += `<div class="msg bot" style="color:red;">Error: ${err}</div>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>

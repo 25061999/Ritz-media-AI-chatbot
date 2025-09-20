@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ritz Media AI Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+      color: #fff;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+    h1 span.icon {
+      font-size: 38px;
+    }
+    #chatbox {
+      width: 80%;
+      max-width: 600px;
+      height: 450px;
+      border: 1px solid #ccc;
+      background: #fff;
+      overflow-y: auto;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    .message {
+      display: flex;
+      align-items: flex-start;
+      margin: 12px 0;
+      animation: fadeIn 0.3s ease-in;
+    }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      margin-right: 10px;
+      flex-shrink: 0;
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .bubble {
+      padding: 10px 15px;
+      border-radius: 16px;
+      max-width: 70%;
+      font-size: 15px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .user .avatar {
+      background: #e0f7fa;
+    }
+    .user .bubble {
+      background: #e0f7fa;
+      color: #00796b;
+      border-bottom-right-radius: 0;
+    }
+    .bot .avatar {
+      background: #e8f0fe;
+    }
+    .bot .bubble {
+      background: #e8f0fe;
+      color: #1a73e8;
+      border-bottom-left-radius: 0;
+    }
+    #input-area {
+      display: flex;
+      width: 80%;
+      max-width: 600px;
+      margin-top: 5px;
+    }
+    #question {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 16px;
+      margin-left: 8px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: #ff9800;
+      color: #fff;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #e68900;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <h1><span class="icon">🤖</span> Ritz Media AI Chatbot</h1>
+
+  <div id="chatbox"></div>
+
+  <div id="input-area">
+    <input type="text" id="question" placeholder="Ask me something..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("question");
+      const chatbox = document.getElementById("chatbox");
+      const question = input.value.trim();
+
+      if (!question) return;
+
+      // Display user message
+      chatbox.innerHTML += `
+        <div class="message user">
+          <div class="avatar">👤</div>
+          <div class="bubble">${question}</div>
+        </div>`;
+      chatbox.scrollTop = chatbox.scrollHeight;
+      input.value = "";
+
+      // Show typing indicator
+      const typingId = "typing-" + Date.now();
+      chatbox.innerHTML += `
+        <div class="message bot" id="${typingId}">
+          <div class="avatar">🤖</div>
+          <div class="bubble">Typing...</div>
+        </div>`;
+      chatbox.scrollTop = chatbox.scrollHeight;
+
+      try {
+        const response = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question }),
+        });
+
+        const data = await response.json();
+
+        // Replace typing indicator with response
+        document.getElementById(typingId).outerHTML = `
+          <div class="message bot">
+            <div class="avatar">🤖</div>
+            <div class="bubble">${data.answer}</div>
+          </div>`;
+        chatbox.scrollTop = chatbox.scrollHeight;
+      } catch (error) {
+        document.getElementById(typingId).outerHTML = `
+          <div class="message bot">
+            <div class="avatar">❌</div>
+            <div class="bubble">Error: Could not reach server.</div>
+          </div>`;
+      }
+    }
+
+    // Allow Enter key to send message
+    document.getElementById("question").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>

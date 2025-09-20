@@ -1,0 +1,8 @@
+ritz_chatbot/
+│── requirements.txt
+│── ritz_content.txt
+│── build_kb.py
+│── app.py
+│── index.html
+│── .env
+│── test_chat.py
