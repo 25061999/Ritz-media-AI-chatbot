@@ -82,13 +82,3 @@ Feel free to fork the project, create branches, and submit pull requests.
 MIT License
 
 
----
-
-✅ **Tips for your README:**  
-1. Keep it clear and concise.  
-2. Include **installation instructions** and **how to run the project**.  
-3. Avoid including secrets (like `.env` values).  
-4. Add **screenshots or gifs** if possible to make it visually appealing.  
-
-
----
